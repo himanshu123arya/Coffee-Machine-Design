@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script>
+      class CoffeeMachine {
+        constructor() {
+          this.ingredients = {
+            water: new IngredientContainer("Water", 1000),
+            milk: new IngredientContainer("Milk", 500),
+            coffeeBeans: new IngredientContainer("Coffee Beans", 300),
+            sugar: new IngredientContainer("Sugar", 200),
+          };
+          this.menu = new Menu();
+          this.display = new Display();
+        }
+
+        selectBeverage(beverageName) {
+          const recipe = this.menu.getRecipe(beverageName);
+          if (!recipe) {
+            this.display.showMessage("Beverage not available.");
+            return;
+          }
+          if (this.hasIngredients(recipe)) {
+            this.useIngredients(recipe);
+            this.display.showMessage(`Enjoy your ${beverageName}! ☕`);
+          } else {
+            this.display.showMessage("Not enough ingredients. Please refill.");
+          }
+        }
+
+        hasIngredients(recipe) {
+          for (const [ingredient, requiredAmount] of Object.entries(
+            recipe.ingredients
+          )) {
+            if (
+              !this.ingredients[ingredient] ||
+              !this.ingredients[ingredient].hasEnough(requiredAmount)
+            ) {
+              return false;
+            }
+          }
+          return true;
+        }
+
+        useIngredients(recipe) {
+          for (const [ingredient, requiredAmount] of Object.entries(
+            recipe.ingredients
+          )) {
+            this.ingredients[ingredient].consume(requiredAmount);
+          }
+        }
+
+        refillIngredient(ingredientName, amount) {
+          if (this.ingredients[ingredientName]) {
+            this.ingredients[ingredientName].refill(amount);
+            this.display.showMessage(
+              `${ingredientName} refilled by ${amount}ml/g.`
+            );
+          } else {
+            this.display.showMessage("Invalid ingredient name.");
+          }
+        }
+
+        cleanMachine() {
+          this.display.showMessage("Cleaning the machine... Done!");
+        }
+      }
+
+      class IngredientContainer {
+        constructor(name, capacity) {
+          this.name = name;
+          this.capacity = capacity;
+          this.currentQuantity = capacity;
+        }
+
+        hasEnough(amount) {
+          return this.currentQuantity >= amount;
+        }
+
+        consume(amount) {
+          if (this.hasEnough(amount)) {
+            this.currentQuantity -= amount;
+          } else {
+            throw new Error(`Not enough ${this.name}`);
+          }
+        }
+
+        refill(amount) {
+          this.currentQuantity += amount;
+          if (this.currentQuantity > this.capacity) {
+            this.currentQuantity = this.capacity; // max limit
+          }
+        }
+      }
+
+      class Menu {
+        constructor() {
+          this.beverages = {
+            Espresso: new Recipe({
+              water: 50,
+              coffeeBeans: 18,
+            }),
+            Latte: new Recipe({
+              water: 200,
+              milk: 150,
+              coffeeBeans: 24,
+            }),
+            Cappuccino: new Recipe({
+              water: 250,
+              milk: 100,
+              coffeeBeans: 24,
+              sugar: 10,
+            }),
+          };
+        }
+
+        getRecipe(name) {
+          return this.beverages[name];
+        }
+      }
+
+      class Recipe {
+        constructor(ingredients) {
+          this.ingredients = ingredients;
+        }
+      }
+
+      class Display {
+        showMessage(message) {
+          console.log(message);
+        }
+      }
+
+      const myCoffeeMachine = new CoffeeMachine();
+      myCoffeeMachine.selectBeverage("Latte");
+      myCoffeeMachine.refillIngredient("milk", 200);
+      myCoffeeMachine.cleanMachine();
+      
+    </script>
+  </head>
+  <body></body>
+</html>
